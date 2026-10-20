@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Compoundex — Country &amp; Geopolitical Risk Predictor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tree">
+      <svg viewBox="0 0 48 48" width="42" height="42" aria-hidden="true">
+        <path d="M24 6 L33 20 H28 L35 31 H28 L34 40 H14 L20 31 H13 L20 20 H15 Z" fill="#1F6F5C"/>
+        <rect x="22" y="39" width="4" height="6" rx="1" fill="#1F6F5C"/>
+      </svg>
+    </div>
+    <h1>Compoundex</h1>
+    <p class="tagline">The Roots of Investment Discipline</p>
+    <p class="riskarea">Country &amp; Geopolitical Risk</p>
+  </header>
+
+  <section class="explainer">
+    <h2>What this model predicts</h2>
+    <p>
+      Compoundex teaches students to value real companies with full discounted cash flow
+      (DCF) models. Every DCF needs a discount rate, and for any company with material
+      operations abroad that rate must include a <strong>country risk premium</strong>.
+    </p>
+    <p>
+      This model predicts the probability that a country will experience
+      <strong>elevated geopolitical risk over the next 12 months</strong> — sovereign
+      stress, conflict escalation, a major sanctions action or a disorderly political
+      transition. When a student values a company exposed to a flagged country, the
+      platform prompts them to widen the country risk premium, and the same signal is
+      used to review the geographic exposure of the live model portfolio.
+    </p>
+  </section>
+
+  <form method="POST" class="card">
+    <h2>Enter country risk indicators</h2>
+
+    <label for="sanctions_events_last_5_years">Sanctions events, last 5 years</label>
+    <input type="number" id="sanctions_events_last_5_years" name="sanctions_events_last_5_years"
+           min="0" max="50" step="1" required placeholder="e.g. 3"
+           value="{{ result.inputs.sanctions_events_last_5_years if result and result.inputs else '' }}">
+    <small>Distinct international sanctions actions taken against the country.</small>
+
+    <label for="sovereign_cds_spread_bps">Sovereign CDS spread (basis points)</label>
+    <input type="number" id="sovereign_cds_spread_bps" name="sovereign_cds_spread_bps"
+           min="0" max="5000" step="0.01" required placeholder="e.g. 330.5"
+           value="{{ result.inputs.sovereign_cds_spread_bps if result and result.inputs else '' }}">
+    <small>5-year sovereign CDS — the market's own price of default risk.</small>
+
+    <label for="political_stability_index">Political stability index</label>
+    <input type="number" id="political_stability_index" name="political_stability_index"
+           min="-2.5" max="2.5" step="0.001" required placeholder="e.g. -1.2"
+           value="{{ result.inputs.political_stability_index if result and result.inputs else '' }}">
+    <small>World Bank WGI scale: −2.5 fragile to +2.5 very stable.</small>
+
+    <button type="submit">Assess country risk</button>
+  </form>
+
+  {% if result %}
+    {% if result.error %}
+      <div class="result error"><p>{{ result.error }}</p></div>
+    {% else %}
+      <div class="result {{ 'yes' if result.prediction == 1 else 'no' }}">
+        <p class="verdict">{{ result.label }}</p>
+        <p class="prob">{{ result.probability }}%</p>
+        <p class="probnote">probability of elevated geopolitical risk in the next 12 months</p>
+        <div class="meter"><span style="width: {{ result.probability }}%"></span></div>
+        <p class="band">Risk band: <strong>{{ result.band }}</strong></p>
+        <p class="guidance">{{ result.guidance }}</p>
+        <p class="raw">Model output (binary prediction): <code>{{ result.prediction }}</code></p>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <section class="api">
+    <h2>API endpoint</h2>
+    <p>Other applications can call the model directly:</p>
+    <pre><code>POST /api/predict
+Content-Type: application/json
+
+{
+  "sanctions_events_last_5_years": 3,
+  "sovereign_cds_spread_bps": 330.5,
+  "political_stability_index": -1.2
+}</code></pre>
+    <p>Returns the prediction, probability and risk band as JSON.</p>
+  </section>
+
+  <footer>Compoundex · logistic regression on synthetic data · IE Fintech GW7.2</footer>
+</div>
+</body>
+</html>
